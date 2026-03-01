@@ -28,6 +28,19 @@ let ChecksController = class ChecksController {
     list(req, userId) {
         return this.checksService.listForRequester(req.user.sub, req.user.role, userId);
     }
+    async getPhoto(req, id, type, res) {
+        const normalized = type.toLowerCase();
+        if (normalized !== 'front' &&
+            normalized !== 'back' &&
+            normalized !== 'profile1' &&
+            normalized !== 'profile2') {
+            throw new common_1.BadRequestException('photo type must be front, back, profile1 or profile2');
+        }
+        const photo = await this.checksService.getPhotoForRequester(req.user.sub, req.user.role, id, normalized);
+        res.setHeader('Content-Type', photo.mimeType);
+        res.setHeader('Cache-Control', 'private, max-age=60');
+        res.send(photo.buffer);
+    }
     create(req, files, body) {
         const frontPhoto = files?.frontPhoto?.[0];
         const backPhoto = files?.backPhoto?.[0];
@@ -75,6 +88,16 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], ChecksController.prototype, "list", null);
+__decorate([
+    (0, common_1.Get)(':id/photo/:type'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Param)('type')),
+    __param(3, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String, Object]),
+    __metadata("design:returntype", Promise)
+], ChecksController.prototype, "getPhoto", null);
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileFieldsInterceptor)([

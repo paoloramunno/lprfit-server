@@ -1,3 +1,4 @@
+import type { Response } from 'express';
 import { ChecksService } from './checks.service';
 type Role = 'ADMIN' | 'USER';
 type RequestUser = {
@@ -27,23 +28,9 @@ type UploadedFields = {
 export declare class ChecksController {
     private readonly checksService;
     constructor(checksService: ChecksService);
-    list(req: RequestUser, userId?: string): Promise<({
-        owner: {
-            id: string;
-            email: string;
-            fullName: string;
-        };
-        creator: {
-            id: string;
-            email: string;
-            role: import("@prisma/client").$Enums.Role;
-            fullName: string;
-        };
-    } & {
+    list(req: RequestUser, userId?: string): Promise<{
         id: string;
         createdAt: Date;
-        userId: string;
-        createdById: string;
         workoutsPerWeek: string;
         workoutIssues: string;
         workoutChanges: string;
@@ -63,14 +50,21 @@ export declare class ChecksController {
         muscleMass: string;
         fatMass: string;
         bodyWater: string;
-        frontPhotoUrl: string;
-        backPhotoUrl: string;
-        profileOnePhotoUrl: string;
-        profileTwoPhotoUrl: string;
         isProcessed: boolean;
         processedAt: Date | null;
-        processedById: string | null;
-    })[]>;
+        owner: {
+            id: string;
+            email: string;
+            fullName: string;
+        };
+        creator: {
+            id: string;
+            email: string;
+            role: import("@prisma/client").$Enums.Role;
+            fullName: string;
+        };
+    }[]>;
+    getPhoto(req: RequestUser, id: string, type: string, res: Response): Promise<void>;
     create(req: RequestUser, files: UploadedFields, body: {
         userId?: string;
         workoutsPerWeek: string;

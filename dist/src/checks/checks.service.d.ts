@@ -32,26 +32,13 @@ export type CreateCheckInput = {
     profileOnePhotoUrl: string;
     profileTwoPhotoUrl: string;
 };
+type CheckPhotoType = 'front' | 'back' | 'profile1' | 'profile2';
 export declare class ChecksService {
     private readonly prisma;
     constructor(prisma: PrismaService);
-    listForRequester(requesterId: string, requesterRole: Role, userId?: string): Promise<({
-        owner: {
-            id: string;
-            email: string;
-            fullName: string;
-        };
-        creator: {
-            id: string;
-            email: string;
-            role: import("@prisma/client").$Enums.Role;
-            fullName: string;
-        };
-    } & {
+    listForRequester(requesterId: string, requesterRole: Role, userId?: string): Promise<{
         id: string;
         createdAt: Date;
-        userId: string;
-        createdById: string;
         workoutsPerWeek: string;
         workoutIssues: string;
         workoutChanges: string;
@@ -71,14 +58,20 @@ export declare class ChecksService {
         muscleMass: string;
         fatMass: string;
         bodyWater: string;
-        frontPhotoUrl: string;
-        backPhotoUrl: string;
-        profileOnePhotoUrl: string;
-        profileTwoPhotoUrl: string;
         isProcessed: boolean;
         processedAt: Date | null;
-        processedById: string | null;
-    })[]>;
+        owner: {
+            id: string;
+            email: string;
+            fullName: string;
+        };
+        creator: {
+            id: string;
+            email: string;
+            role: import("@prisma/client").$Enums.Role;
+            fullName: string;
+        };
+    }[]>;
     create(input: CreateCheckInput): Promise<{
         owner: {
             id: string;
@@ -122,6 +115,10 @@ export declare class ChecksService {
         isProcessed: boolean;
         processedAt: Date | null;
         processedById: string | null;
+    }>;
+    getPhotoForRequester(requesterId: string, requesterRole: Role, checkId: string, photoType: CheckPhotoType): Promise<{
+        mimeType: string;
+        buffer: Buffer<ArrayBuffer>;
     }>;
     private required;
     private parseSleepCompared;

@@ -53,23 +53,9 @@ export declare class AdminService {
         userId: string;
         timeSlotId: string;
     }>;
-    getPendingChecks(): Promise<({
-        owner: {
-            id: string;
-            email: string;
-            fullName: string;
-        };
-        creator: {
-            id: string;
-            email: string;
-            role: import("@prisma/client").$Enums.Role;
-            fullName: string;
-        };
-    } & {
+    getPendingChecks(): Promise<{
         id: string;
         createdAt: Date;
-        userId: string;
-        createdById: string;
         workoutsPerWeek: string;
         workoutIssues: string;
         workoutChanges: string;
@@ -89,15 +75,44 @@ export declare class AdminService {
         muscleMass: string;
         fatMass: string;
         bodyWater: string;
-        frontPhotoUrl: string;
-        backPhotoUrl: string;
-        profileOnePhotoUrl: string;
-        profileTwoPhotoUrl: string;
         isProcessed: boolean;
         processedAt: Date | null;
-        processedById: string | null;
-    })[]>;
-    getProcessedChecks(): Promise<({
+        owner: {
+            id: string;
+            email: string;
+            fullName: string;
+        };
+        creator: {
+            id: string;
+            email: string;
+            role: import("@prisma/client").$Enums.Role;
+            fullName: string;
+        };
+    }[]>;
+    getProcessedChecks(): Promise<{
+        id: string;
+        createdAt: Date;
+        workoutsPerWeek: string;
+        workoutIssues: string;
+        workoutChanges: string;
+        stepsOnTarget: string;
+        workoutScore: string;
+        freeMeals: string;
+        nutritionIssues: string;
+        nutritionScore: string;
+        sleepRegular: string;
+        sleepHours: string;
+        sleepCompared: import("@prisma/client").$Enums.SleepComparison;
+        stressHigherThanUsual: string;
+        weight: string;
+        gluteCircumference: string;
+        waistCircumference: string;
+        thighCircumference: string;
+        muscleMass: string;
+        fatMass: string;
+        bodyWater: string;
+        isProcessed: boolean;
+        processedAt: Date | null;
         owner: {
             id: string;
             email: string;
@@ -114,38 +129,7 @@ export declare class AdminService {
             email: string;
             fullName: string;
         } | null;
-    } & {
-        id: string;
-        createdAt: Date;
-        userId: string;
-        createdById: string;
-        workoutsPerWeek: string;
-        workoutIssues: string;
-        workoutChanges: string;
-        stepsOnTarget: string;
-        workoutScore: string;
-        freeMeals: string;
-        nutritionIssues: string;
-        nutritionScore: string;
-        sleepRegular: string;
-        sleepHours: string;
-        sleepCompared: import("@prisma/client").$Enums.SleepComparison;
-        stressHigherThanUsual: string;
-        weight: string;
-        gluteCircumference: string;
-        waistCircumference: string;
-        thighCircumference: string;
-        muscleMass: string;
-        fatMass: string;
-        bodyWater: string;
-        frontPhotoUrl: string;
-        backPhotoUrl: string;
-        profileOnePhotoUrl: string;
-        profileTwoPhotoUrl: string;
-        isProcessed: boolean;
-        processedAt: Date | null;
-        processedById: string | null;
-    })[]>;
+    }[]>;
     markCheckAsProcessed(checkId: string, adminId: string): Promise<({
         owner: {
             id: string;

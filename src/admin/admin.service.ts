@@ -220,7 +220,30 @@ export class AdminService {
   async getPendingChecks() {
     return this.prisma.coachingCheck.findMany({
       where: { isProcessed: false },
-      include: {
+      select: {
+        id: true,
+        workoutsPerWeek: true,
+        workoutIssues: true,
+        workoutChanges: true,
+        stepsOnTarget: true,
+        workoutScore: true,
+        freeMeals: true,
+        nutritionIssues: true,
+        nutritionScore: true,
+        sleepRegular: true,
+        sleepHours: true,
+        sleepCompared: true,
+        stressHigherThanUsual: true,
+        weight: true,
+        gluteCircumference: true,
+        waistCircumference: true,
+        thighCircumference: true,
+        muscleMass: true,
+        fatMass: true,
+        bodyWater: true,
+        isProcessed: true,
+        processedAt: true,
+        createdAt: true,
         owner: {
           select: {
             id: true,
@@ -244,7 +267,30 @@ export class AdminService {
   async getProcessedChecks() {
     return this.prisma.coachingCheck.findMany({
       where: { isProcessed: true },
-      include: {
+      select: {
+        id: true,
+        workoutsPerWeek: true,
+        workoutIssues: true,
+        workoutChanges: true,
+        stepsOnTarget: true,
+        workoutScore: true,
+        freeMeals: true,
+        nutritionIssues: true,
+        nutritionScore: true,
+        sleepRegular: true,
+        sleepHours: true,
+        sleepCompared: true,
+        stressHigherThanUsual: true,
+        weight: true,
+        gluteCircumference: true,
+        waistCircumference: true,
+        thighCircumference: true,
+        muscleMass: true,
+        fatMass: true,
+        bodyWater: true,
+        isProcessed: true,
+        processedAt: true,
+        createdAt: true,
         owner: {
           select: {
             id: true,

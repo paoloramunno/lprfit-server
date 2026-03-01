@@ -3,8 +3,10 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
+  Res,
   Req,
   UploadedFiles,
   UseGuards,
@@ -13,6 +15,7 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { extname } from 'path';
+import type { Response } from 'express';
 import { AuthGuard } from '../auth/auth.guard';
 import { ChecksService } from './checks.service';
 
@@ -42,6 +45,35 @@ export class ChecksController {
   @Get()
   list(@Req() req: RequestUser, @Query('userId') userId?: string) {
     return this.checksService.listForRequester(req.user.sub, req.user.role, userId);
+  }
+
+  @Get(':id/photo/:type')
+  async getPhoto(
+    @Req() req: RequestUser,
+    @Param('id') id: string,
+    @Param('type') type: string,
+    @Res() res: Response,
+  ) {
+    const normalized = type.toLowerCase();
+    if (
+      normalized !== 'front' &&
+      normalized !== 'back' &&
+      normalized !== 'profile1' &&
+      normalized !== 'profile2'
+    ) {
+      throw new BadRequestException('photo type must be front, back, profile1 or profile2');
+    }
+
+    const photo = await this.checksService.getPhotoForRequester(
+      req.user.sub,
+      req.user.role,
+      id,
+      normalized as 'front' | 'back' | 'profile1' | 'profile2',
+    );
+
+    res.setHeader('Content-Type', photo.mimeType);
+    res.setHeader('Cache-Control', 'private, max-age=60');
+    res.send(photo.buffer);
   }
 
   @Post()

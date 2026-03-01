@@ -36,7 +36,30 @@ let ChecksService = class ChecksService {
         }
         return this.prisma.coachingCheck.findMany({
             where: { userId: ownerUserId },
-            include: {
+            select: {
+                id: true,
+                workoutsPerWeek: true,
+                workoutIssues: true,
+                workoutChanges: true,
+                stepsOnTarget: true,
+                workoutScore: true,
+                freeMeals: true,
+                nutritionIssues: true,
+                nutritionScore: true,
+                sleepRegular: true,
+                sleepHours: true,
+                sleepCompared: true,
+                stressHigherThanUsual: true,
+                weight: true,
+                gluteCircumference: true,
+                waistCircumference: true,
+                thighCircumference: true,
+                muscleMass: true,
+                fatMass: true,
+                bodyWater: true,
+                isProcessed: true,
+                processedAt: true,
+                createdAt: true,
                 owner: {
                     select: {
                         id: true,
@@ -114,6 +137,39 @@ let ChecksService = class ChecksService {
                 },
             },
         });
+    }
+    async getPhotoForRequester(requesterId, requesterRole, checkId, photoType) {
+        const check = await this.prisma.coachingCheck.findUnique({
+            where: { id: checkId },
+            select: {
+                userId: true,
+                frontPhotoUrl: true,
+                backPhotoUrl: true,
+                profileOnePhotoUrl: true,
+                profileTwoPhotoUrl: true,
+            },
+        });
+        if (!check) {
+            throw new common_1.NotFoundException('check not found');
+        }
+        if (requesterRole !== Role.ADMIN && check.userId !== requesterId) {
+            throw new common_1.UnauthorizedException('not allowed to access this photo');
+        }
+        const raw = photoType === 'front'
+            ? check.frontPhotoUrl
+            : photoType === 'back'
+                ? check.backPhotoUrl
+                : photoType === 'profile1'
+                    ? check.profileOnePhotoUrl
+                    : check.profileTwoPhotoUrl;
+        const match = raw.match(/^data:([^;]+);base64,(.+)$/);
+        if (!match) {
+            throw new common_1.BadRequestException('invalid stored photo format');
+        }
+        const mimeType = match[1];
+        const base64 = match[2];
+        const buffer = Buffer.from(base64, 'base64');
+        return { mimeType, buffer };
     }
     required(value, field) {
         const parsed = value?.trim();
