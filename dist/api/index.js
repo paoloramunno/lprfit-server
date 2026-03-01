@@ -23,7 +23,21 @@ async function getExpressApp() {
     return expressApp;
 }
 async function handler(req, res) {
-    const app = await getExpressApp();
-    return app(req, res);
+    try {
+        const app = await getExpressApp();
+        return app(req, res);
+    }
+    catch (error) {
+        const message = error instanceof Error ? error.message : 'unknown serverless error';
+        const stack = error instanceof Error ? error.stack : undefined;
+        console.error('Vercel API bootstrap error:', error);
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+            error: 'api_bootstrap_failed',
+            message,
+            stack,
+        }));
+    }
 }
 //# sourceMappingURL=index.js.map
