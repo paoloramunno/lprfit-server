@@ -23,6 +23,17 @@ async function getExpressApp() {
     return expressApp;
 }
 async function handler(req, res) {
+    if (req?.url?.startsWith('/__diag')) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+            ok: true,
+            hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+            hasDirectUrl: Boolean(process.env.DIRECT_URL),
+            hasJwtSecret: Boolean(process.env.JWT_SECRET),
+        }));
+        return;
+    }
     try {
         const app = await getExpressApp();
         return app(req, res);
