@@ -2,12 +2,16 @@ import 'reflect-metadata';
 import express from 'express';
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
-import { AppModule } from '../src/app.module';
 
 let cachedExpressApp: ReturnType<typeof express> | null = null;
 
 async function getExpressApp() {
   if (cachedExpressApp) return cachedExpressApp;
+
+  // Lazy-load AppModule so startup errors are caught and returned as JSON
+  // instead of crashing the whole serverless function before handler runs.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { AppModule } = require('../src/app.module');
 
   const expressApp = express();
   const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp), {
