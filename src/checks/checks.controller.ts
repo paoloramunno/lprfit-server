@@ -12,9 +12,8 @@ import {
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { extname } from 'path';
-import { randomUUID } from 'crypto';
 import { AuthGuard } from '../auth/auth.guard';
 import { ChecksService } from './checks.service';
 
@@ -28,10 +27,10 @@ type RequestUser = {
 };
 
 type UploadedFields = {
-  frontPhoto?: Array<{ filename: string }>;
-  backPhoto?: Array<{ filename: string }>;
-  profileOnePhoto?: Array<{ filename: string }>;
-  profileTwoPhoto?: Array<{ filename: string }>;
+  frontPhoto?: Array<{ mimetype: string; buffer: Buffer }>;
+  backPhoto?: Array<{ mimetype: string; buffer: Buffer }>;
+  profileOnePhoto?: Array<{ mimetype: string; buffer: Buffer }>;
+  profileTwoPhoto?: Array<{ mimetype: string; buffer: Buffer }>;
 };
 
 @UseGuards(AuthGuard)
@@ -54,13 +53,7 @@ export class ChecksController {
         { name: 'profileTwoPhoto', maxCount: 1 },
       ],
       {
-        storage: diskStorage({
-          destination: './uploads',
-          filename: (_, file, cb) => {
-            const suffix = `${Date.now()}-${randomUUID()}`;
-            cb(null, `${suffix}${extname(file.originalname).toLowerCase() || '.bin'}`);
-          },
-        }),
+        storage: memoryStorage(),
         limits: {
           fileSize: 15 * 1024 * 1024,
         },
@@ -105,10 +98,10 @@ export class ChecksController {
       bodyWater: string;
     },
   ) {
-    const frontPhoto = files?.frontPhoto?.[0]?.filename;
-    const backPhoto = files?.backPhoto?.[0]?.filename;
-    const profileOnePhoto = files?.profileOnePhoto?.[0]?.filename;
-    const profileTwoPhoto = files?.profileTwoPhoto?.[0]?.filename;
+    const frontPhoto = files?.frontPhoto?.[0];
+    const backPhoto = files?.backPhoto?.[0];
+    const profileOnePhoto = files?.profileOnePhoto?.[0];
+    const profileTwoPhoto = files?.profileTwoPhoto?.[0];
 
     if (!frontPhoto || !backPhoto || !profileOnePhoto || !profileTwoPhoto) {
       throw new BadRequestException('all 4 photos are required');
@@ -137,10 +130,10 @@ export class ChecksController {
       muscleMass: body.muscleMass,
       fatMass: body.fatMass,
       bodyWater: body.bodyWater,
-      frontPhotoUrl: `/uploads/${frontPhoto}`,
-      backPhotoUrl: `/uploads/${backPhoto}`,
-      profileOnePhotoUrl: `/uploads/${profileOnePhoto}`,
-      profileTwoPhotoUrl: `/uploads/${profileTwoPhoto}`,
+      frontPhotoUrl: `data:${frontPhoto.mimetype};base64,${frontPhoto.buffer.toString('base64')}`,
+      backPhotoUrl: `data:${backPhoto.mimetype};base64,${backPhoto.buffer.toString('base64')}`,
+      profileOnePhotoUrl: `data:${profileOnePhoto.mimetype};base64,${profileOnePhoto.buffer.toString('base64')}`,
+      profileTwoPhotoUrl: `data:${profileTwoPhoto.mimetype};base64,${profileTwoPhoto.buffer.toString('base64')}`,
     });
   }
 }

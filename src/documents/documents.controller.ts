@@ -12,9 +12,8 @@ import {
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { extname } from 'path';
-import { randomUUID } from 'crypto';
 import { AuthGuard } from '../auth/auth.guard';
 import { DocumentsService } from './documents.service';
 
@@ -40,13 +39,7 @@ export class DocumentsController {
   @Post()
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (_, file, cb) => {
-          const suffix = `${Date.now()}-${randomUUID()}`;
-          cb(null, `${suffix}${extname(file.originalname).toLowerCase() || '.bin'}`);
-        },
-      }),
+      storage: memoryStorage(),
       limits: {
         fileSize: 10 * 1024 * 1024,
       },
@@ -68,7 +61,7 @@ export class DocumentsController {
   )
   upload(
     @Req() req: RequestUser,
-    @UploadedFile() file: { filename: string } | undefined,
+    @UploadedFile() file: { mimetype: string; buffer: Buffer } | undefined,
     @Body() body: { docType: string; userId?: string },
   ) {
     if (!file) {
@@ -81,7 +74,7 @@ export class DocumentsController {
       requesterId: req.user.sub,
       requesterRole: req.user.role,
       docType,
-      fileUrl: `/uploads/${file.filename}`,
+      fileUrl: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
       targetUserId: body.userId,
     });
   }
