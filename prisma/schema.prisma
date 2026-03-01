@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum SessionTypeCode {
+  BOUTIQUE_FITNESS
+  COACHING_ONLINE
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+enum DocumentType {
+  WORKOUT_PDF
+  DIET_PDF
+  MEDICAL_CERT_PDF
+  BODY_CHECK_PDF
+}
+
+enum SleepComparison {
+  BETTER
+  WORSE
+  SAME
+}
+
+model User {
+  id                String      @id @default(uuid())
+  email             String      @unique
+  passwordHash      String
+  role              Role        @default(USER)
+  firstName         String?
+  lastName          String?
+  fullName          String
+  phone             String?
+  birthDate         DateTime?   @db.Date
+  createdAt         DateTime    @default(now())
+
+  profile           UserProfile?
+  bookings          Booking[]
+  documentsOwned    Document[]  @relation("DocumentOwner")
+  documentsUploaded Document[]  @relation("DocumentUploader")
+  checksOwned       CoachingCheck[] @relation("CheckOwner")
+  checksCreated     CoachingCheck[] @relation("CheckCreator")
+  checksProcessed   CoachingCheck[] @relation("CheckProcessor")
+}
+
+model UserProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  goal      String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SessionType {
+  id          Int              @id @default(autoincrement())
+  code        SessionTypeCode  @unique
+  name        String
+  description String?
+  timeSlots   TimeSlot[]
+}
+
+model TimeSlot {
+  id            String      @id @default(uuid())
+  sessionTypeId Int
+  date          DateTime    @db.Date
+  startTime     DateTime    @db.Time(0)
+  endTime       DateTime    @db.Time(0)
+  capacity      Int         @default(5)
+  bookedCount   Int         @default(0)
+
+  sessionType   SessionType @relation(fields: [sessionTypeId], references: [id], onDelete: Restrict)
+  bookings      Booking[]
+
+  @@unique([sessionTypeId, date, startTime])
+  @@index([date, startTime])
+}
+
+model Booking {
+  id         String        @id @default(uuid())
+  userId     String
+  timeSlotId String
+  status     BookingStatus @default(CONFIRMED)
+  createdAt  DateTime      @default(now())
+
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeSlot   TimeSlot      @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, timeSlotId])
+  @@index([timeSlotId, status])
+}
+
+model Document {
+  id          String       @id @default(uuid())
+  userId      String
+  docType     DocumentType
+  fileUrl     String
+  uploadedBy  String
+  createdAt   DateTime     @default(now())
+  expiresAt   DateTime?
+
+  owner       User         @relation("DocumentOwner", fields: [userId], references: [id], onDelete: Cascade)
+  uploader    User         @relation("DocumentUploader", fields: [uploadedBy], references: [id], onDelete: Restrict)
+
+  @@index([userId, docType])
+}
+
+model CoachingCheck {
+  id                      String          @id @default(uuid())
+  userId                  String
+  createdById             String
+  workoutsPerWeek         String
+  workoutIssues           String
+  workoutChanges          String
+  stepsOnTarget           String
+  workoutScore            String
+  freeMeals               String
+  nutritionIssues         String
+  nutritionScore          String
+  sleepRegular            String
+  sleepHours              String
+  sleepCompared           SleepComparison
+  stressHigherThanUsual   String
+  weight                  String          @default("")
+  gluteCircumference      String          @default("")
+  waistCircumference      String          @default("")
+  thighCircumference      String          @default("")
+  muscleMass              String          @default("")
+  fatMass                 String          @default("")
+  bodyWater               String          @default("")
+  frontPhotoUrl           String
+  backPhotoUrl            String
+  profileOnePhotoUrl      String
+  profileTwoPhotoUrl      String
+  isProcessed             Boolean         @default(false)
+  processedAt             DateTime?
+  processedById           String?
+  createdAt               DateTime        @default(now())
+
+  owner                   User            @relation("CheckOwner", fields: [userId], references: [id], onDelete: Cascade)
+  creator                 User            @relation("CheckCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  processor               User?           @relation("CheckProcessor", fields: [processedById], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([isProcessed, createdAt(sort: Desc)])
+}
