@@ -1,5 +1,9 @@
-import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+type Role = 'ADMIN' | 'USER';
+declare const Role: {
+    readonly ADMIN: "ADMIN";
+    readonly USER: "USER";
+};
 export declare class BookingsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
@@ -18,3 +22,4 @@ export declare class BookingsService {
         timeSlotId: string;
     }>;
 }
+export {};

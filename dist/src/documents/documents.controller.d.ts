@@ -1,5 +1,5 @@
-import { Role } from '@prisma/client';
 import { DocumentsService } from './documents.service';
+type Role = 'ADMIN' | 'USER';
 type RequestUser = {
     user: {
         sub: string;

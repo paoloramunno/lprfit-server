@@ -11,9 +11,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
-const client_1 = require("@prisma/client");
 const crypto_1 = require("crypto");
 const prisma_service_1 = require("../prisma/prisma.service");
+const Role = {
+    ADMIN: 'ADMIN',
+    USER: 'USER',
+};
 let AuthService = class AuthService {
     prisma;
     constructor(prisma) {
@@ -48,7 +51,7 @@ let AuthService = class AuthService {
                 fullName: `${firstName} ${lastName}`,
                 phone,
                 birthDate,
-                role: client_1.Role.USER,
+                role: Role.USER,
                 passwordHash: this.hashPassword(password),
             },
         });
@@ -94,7 +97,7 @@ let AuthService = class AuthService {
     }
     async loginAdmin(input) {
         const result = await this.login(input);
-        if (result.user.role !== client_1.Role.ADMIN) {
+        if (result.user.role !== Role.ADMIN) {
             throw new common_1.UnauthorizedException('admin access required');
         }
         return result;

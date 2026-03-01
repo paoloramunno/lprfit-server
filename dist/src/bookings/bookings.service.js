@@ -11,8 +11,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BookingsService = void 0;
 const common_1 = require("@nestjs/common");
-const client_1 = require("@prisma/client");
 const prisma_service_1 = require("../prisma/prisma.service");
+const Role = {
+    ADMIN: 'ADMIN',
+    USER: 'USER',
+};
+const BookingStatus = {
+    CONFIRMED: 'CONFIRMED',
+    CANCELLED: 'CANCELLED',
+};
 let BookingsService = class BookingsService {
     prisma;
     constructor(prisma) {
@@ -42,13 +49,13 @@ let BookingsService = class BookingsService {
                     },
                 },
             });
-            if (existing && existing.status === client_1.BookingStatus.CONFIRMED) {
+            if (existing && existing.status === BookingStatus.CONFIRMED) {
                 throw new common_1.ConflictException('booking already exists');
             }
-            if (existing && existing.status === client_1.BookingStatus.CANCELLED) {
+            if (existing && existing.status === BookingStatus.CANCELLED) {
                 const updated = await tx.booking.update({
                     where: { id: existing.id },
-                    data: { status: client_1.BookingStatus.CONFIRMED },
+                    data: { status: BookingStatus.CONFIRMED },
                 });
                 await tx.timeSlot.update({
                     where: { id: timeSlotId },
@@ -60,7 +67,7 @@ let BookingsService = class BookingsService {
                 data: {
                     userId,
                     timeSlotId,
-                    status: client_1.BookingStatus.CONFIRMED,
+                    status: BookingStatus.CONFIRMED,
                 },
             });
             await tx.timeSlot.update({
@@ -80,16 +87,16 @@ let BookingsService = class BookingsService {
                 throw new common_1.NotFoundException('booking not found');
             }
             const isOwner = booking.userId === requesterId;
-            const isAdmin = requesterRole === client_1.Role.ADMIN;
+            const isAdmin = requesterRole === Role.ADMIN;
             if (!isOwner && !isAdmin) {
                 throw new common_1.UnauthorizedException('not allowed to cancel this booking');
             }
-            if (booking.status === client_1.BookingStatus.CANCELLED) {
+            if (booking.status === BookingStatus.CANCELLED) {
                 return booking;
             }
             const updated = await tx.booking.update({
                 where: { id: bookingId },
-                data: { status: client_1.BookingStatus.CANCELLED },
+                data: { status: BookingStatus.CANCELLED },
             });
             await tx.timeSlot.update({
                 where: { id: booking.timeSlotId },

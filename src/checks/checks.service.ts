@@ -4,8 +4,20 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Role, SleepComparison } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+
+type Role = 'ADMIN' | 'USER';
+const Role = {
+  ADMIN: 'ADMIN',
+  USER: 'USER',
+} as const;
+
+type SleepComparison = 'BETTER' | 'WORSE' | 'SAME';
+const SleepComparison = {
+  BETTER: 'BETTER',
+  WORSE: 'WORSE',
+  SAME: 'SAME',
+} as const;
 
 export type CreateCheckInput = {
   requesterId: string;

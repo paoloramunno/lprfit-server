@@ -18,7 +18,7 @@ export declare class AuthController {
             fullName: string;
             phone: string | null;
             birthDate: Date | null;
-            role: import("@prisma/client").Role;
+            role: "ADMIN" | "USER";
         };
         accessToken: string;
     }>;
@@ -34,7 +34,7 @@ export declare class AuthController {
             fullName: string;
             phone: string | null;
             birthDate: Date | null;
-            role: import("@prisma/client").Role;
+            role: "ADMIN" | "USER";
         };
         accessToken: string;
     }>;
@@ -50,7 +50,7 @@ export declare class AuthController {
             fullName: string;
             phone: string | null;
             birthDate: Date | null;
-            role: import("@prisma/client").Role;
+            role: "ADMIN" | "USER";
         };
         accessToken: string;
     }>;

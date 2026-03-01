@@ -1,6 +1,7 @@
 import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
-import { SessionTypeCode } from '@prisma/client';
 import { SlotsService } from './slots.service';
+
+type SessionTypeCode = 'BOUTIQUE_FITNESS' | 'COACHING_ONLINE';
 
 @Controller('slots')
 export class SlotsController {

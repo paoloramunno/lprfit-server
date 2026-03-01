@@ -5,8 +5,19 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { BookingStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+
+type Role = 'ADMIN' | 'USER';
+const Role = {
+  ADMIN: 'ADMIN',
+  USER: 'USER',
+} as const;
+
+type BookingStatus = 'CONFIRMED' | 'CANCELLED';
+const BookingStatus = {
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED',
+} as const;
 
 @Injectable()
 export class BookingsService {

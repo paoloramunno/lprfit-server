@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { SessionTypeCode } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+
+type SessionTypeCode = 'BOUTIQUE_FITNESS' | 'COACHING_ONLINE';
 
 @Injectable()
 export class SlotsService {

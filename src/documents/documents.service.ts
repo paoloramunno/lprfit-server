@@ -4,8 +4,19 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { DocumentType, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+
+type Role = 'ADMIN' | 'USER';
+const Role = {
+  ADMIN: 'ADMIN',
+  USER: 'USER',
+} as const;
+
+type DocumentType =
+  | 'WORKOUT_PDF'
+  | 'DIET_PDF'
+  | 'MEDICAL_CERT_PDF'
+  | 'BODY_CHECK_PDF';
 
 @Injectable()
 export class DocumentsService {

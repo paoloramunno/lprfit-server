@@ -11,15 +11,18 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentsService = void 0;
 const common_1 = require("@nestjs/common");
-const client_1 = require("@prisma/client");
 const prisma_service_1 = require("../prisma/prisma.service");
+const Role = {
+    ADMIN: 'ADMIN',
+    USER: 'USER',
+};
 let DocumentsService = class DocumentsService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
     async listForRequester(requesterId, requesterRole, userId) {
-        if (requesterRole === client_1.Role.ADMIN) {
+        if (requesterRole === Role.ADMIN) {
             const where = userId ? { userId } : undefined;
             return this.prisma.document.findMany({
                 where,
@@ -64,10 +67,10 @@ let DocumentsService = class DocumentsService {
         });
     }
     async upload(input) {
-        const ownerUserId = input.requesterRole === client_1.Role.ADMIN && input.targetUserId
+        const ownerUserId = input.requesterRole === Role.ADMIN && input.targetUserId
             ? input.targetUserId
             : input.requesterId;
-        if (input.requesterRole !== client_1.Role.ADMIN && input.targetUserId && input.targetUserId !== input.requesterId) {
+        if (input.requesterRole !== Role.ADMIN && input.targetUserId && input.targetUserId !== input.requesterId) {
             throw new common_1.UnauthorizedException('user can upload documents only for self');
         }
         const owner = await this.prisma.user.findUnique({ where: { id: ownerUserId } });

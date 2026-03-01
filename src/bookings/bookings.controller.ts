@@ -7,9 +7,10 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import { AuthGuard } from '../auth/auth.guard';
 import { BookingsService } from './bookings.service';
+
+type Role = 'ADMIN' | 'USER';
 
 type RequestUser = {
   user: {

@@ -10,12 +10,13 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { extname } from 'path';
 import { AuthGuard } from '../auth/auth.guard';
 import { ChecksService } from './checks.service';
+
+type Role = 'ADMIN' | 'USER';
 
 const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.heic', '.heif', '.webp'];
 

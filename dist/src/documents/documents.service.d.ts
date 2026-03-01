@@ -1,5 +1,10 @@
-import { DocumentType, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+type Role = 'ADMIN' | 'USER';
+declare const Role: {
+    readonly ADMIN: "ADMIN";
+    readonly USER: "USER";
+};
+type DocumentType = 'WORKOUT_PDF' | 'DIET_PDF' | 'MEDICAL_CERT_PDF' | 'BODY_CHECK_PDF';
 export declare class DocumentsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
@@ -51,3 +56,4 @@ export declare class DocumentsService {
     }>;
     validateDocType(value: string): DocumentType;
 }
+export {};

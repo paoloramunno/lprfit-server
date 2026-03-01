@@ -1,5 +1,9 @@
-import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+type Role = 'ADMIN' | 'USER';
+declare const Role: {
+    readonly ADMIN: "ADMIN";
+    readonly USER: "USER";
+};
 type SafeUser = {
     id: string;
     email: string;

@@ -1,14 +1,13 @@
 import 'reflect-metadata';
 import express from 'express';
+import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import { AppModule } from '../src/app.module';
 
 let cachedExpressApp: ReturnType<typeof express> | null = null;
 
 async function getExpressApp() {
   if (cachedExpressApp) return cachedExpressApp;
-
-  const { NestFactory } = await import('@nestjs/core');
-  const { ExpressAdapter } = await import('@nestjs/platform-express');
-  const { AppModule } = await import('../src/app.module');
 
   const expressApp = express();
   const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp), {

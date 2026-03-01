@@ -6,15 +6,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = handler;
 require("reflect-metadata");
 const express_1 = __importDefault(require("express"));
+const core_1 = require("@nestjs/core");
+const platform_express_1 = require("@nestjs/platform-express");
+const app_module_1 = require("../src/app.module");
 let cachedExpressApp = null;
 async function getExpressApp() {
     if (cachedExpressApp)
         return cachedExpressApp;
-    const { NestFactory } = await import('@nestjs/core');
-    const { ExpressAdapter } = await import('@nestjs/platform-express');
-    const { AppModule } = await import('../src/app.module');
     const expressApp = (0, express_1.default)();
-    const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp), {
+    const app = await core_1.NestFactory.create(app_module_1.AppModule, new platform_express_1.ExpressAdapter(expressApp), {
         logger: false,
     });
     app.enableCors();

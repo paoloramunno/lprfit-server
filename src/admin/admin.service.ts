@@ -4,8 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { BookingStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+
+type BookingStatus = 'CONFIRMED' | 'CANCELLED';
+const BookingStatus = {
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED',
+} as const;
 
 @Injectable()
 export class AdminService {

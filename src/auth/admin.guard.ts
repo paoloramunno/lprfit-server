@@ -4,8 +4,13 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import { AuthGuard } from './auth.guard';
+
+type Role = 'ADMIN' | 'USER';
+const Role = {
+  ADMIN: 'ADMIN',
+  USER: 'USER',
+} as const;
 
 @Injectable()
 export class AdminGuard implements CanActivate {

@@ -3,7 +3,6 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import {
   createHmac,
   randomBytes,
@@ -11,6 +10,12 @@ import {
   timingSafeEqual,
 } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+
+type Role = 'ADMIN' | 'USER';
+const Role = {
+  ADMIN: 'ADMIN',
+  USER: 'USER',
+} as const;
 
 type SafeUser = {
   id: string;

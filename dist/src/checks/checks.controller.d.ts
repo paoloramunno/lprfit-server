@@ -1,5 +1,5 @@
-import { Role } from '@prisma/client';
 import { ChecksService } from './checks.service';
+type Role = 'ADMIN' | 'USER';
 type RequestUser = {
     user: {
         sub: string;

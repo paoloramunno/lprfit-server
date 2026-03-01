@@ -11,8 +11,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminGuard = void 0;
 const common_1 = require("@nestjs/common");
-const client_1 = require("@prisma/client");
 const auth_guard_1 = require("./auth.guard");
+const Role = {
+    ADMIN: 'ADMIN',
+    USER: 'USER',
+};
 let AdminGuard = class AdminGuard {
     authGuard;
     constructor(authGuard) {
@@ -26,7 +29,7 @@ let AdminGuard = class AdminGuard {
         const request = context
             .switchToHttp()
             .getRequest();
-        if (request.user?.role !== client_1.Role.ADMIN) {
+        if (request.user?.role !== Role.ADMIN) {
             throw new common_1.UnauthorizedException('admin access required');
         }
         return true;

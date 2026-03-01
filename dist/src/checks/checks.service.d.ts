@@ -1,5 +1,9 @@
-import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+type Role = 'ADMIN' | 'USER';
+declare const Role: {
+    readonly ADMIN: "ADMIN";
+    readonly USER: "USER";
+};
 export type CreateCheckInput = {
     requesterId: string;
     requesterRole: Role;
@@ -122,3 +126,4 @@ export declare class ChecksService {
     private required;
     private parseSleepCompared;
 }
+export {};

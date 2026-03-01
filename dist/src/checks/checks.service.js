@@ -11,8 +11,16 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChecksService = void 0;
 const common_1 = require("@nestjs/common");
-const client_1 = require("@prisma/client");
 const prisma_service_1 = require("../prisma/prisma.service");
+const Role = {
+    ADMIN: 'ADMIN',
+    USER: 'USER',
+};
+const SleepComparison = {
+    BETTER: 'BETTER',
+    WORSE: 'WORSE',
+    SAME: 'SAME',
+};
 let ChecksService = class ChecksService {
     prisma;
     constructor(prisma) {
@@ -20,7 +28,7 @@ let ChecksService = class ChecksService {
     }
     async listForRequester(requesterId, requesterRole, userId) {
         let ownerUserId = requesterId;
-        if (requesterRole === client_1.Role.ADMIN) {
+        if (requesterRole === Role.ADMIN) {
             if (!userId) {
                 throw new common_1.BadRequestException('userId is required for trainer view');
             }
@@ -49,10 +57,10 @@ let ChecksService = class ChecksService {
         });
     }
     async create(input) {
-        const ownerUserId = input.requesterRole === client_1.Role.ADMIN && input.userId
+        const ownerUserId = input.requesterRole === Role.ADMIN && input.userId
             ? input.userId
             : input.requesterId;
-        if (input.requesterRole !== client_1.Role.ADMIN && input.userId && input.userId !== input.requesterId) {
+        if (input.requesterRole !== Role.ADMIN && input.userId && input.userId !== input.requesterId) {
             throw new common_1.UnauthorizedException('user can create checks only for self');
         }
         const owner = await this.prisma.user.findUnique({ where: { id: ownerUserId } });
@@ -117,11 +125,11 @@ let ChecksService = class ChecksService {
     parseSleepCompared(value) {
         const normalized = value?.trim().toUpperCase();
         if (normalized === 'BETTER')
-            return client_1.SleepComparison.BETTER;
+            return SleepComparison.BETTER;
         if (normalized === 'WORSE')
-            return client_1.SleepComparison.WORSE;
+            return SleepComparison.WORSE;
         if (normalized === 'SAME')
-            return client_1.SleepComparison.SAME;
+            return SleepComparison.SAME;
         throw new common_1.BadRequestException('sleepCompared must be BETTER, WORSE or SAME');
     }
 };

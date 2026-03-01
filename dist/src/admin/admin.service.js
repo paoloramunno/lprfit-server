@@ -11,8 +11,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminService = void 0;
 const common_1 = require("@nestjs/common");
-const client_1 = require("@prisma/client");
 const prisma_service_1 = require("../prisma/prisma.service");
+const BookingStatus = {
+    CONFIRMED: 'CONFIRMED',
+    CANCELLED: 'CANCELLED',
+};
 let AdminService = class AdminService {
     prisma;
     constructor(prisma) {
@@ -102,7 +105,7 @@ let AdminService = class AdminService {
             },
             include: {
                 bookings: {
-                    where: { status: client_1.BookingStatus.CONFIRMED },
+                    where: { status: BookingStatus.CONFIRMED },
                     include: {
                         user: {
                             select: {
@@ -163,13 +166,13 @@ let AdminService = class AdminService {
                     },
                 },
             });
-            if (existing && existing.status === client_1.BookingStatus.CONFIRMED) {
+            if (existing && existing.status === BookingStatus.CONFIRMED) {
                 throw new common_1.ConflictException('booking already exists');
             }
-            if (existing && existing.status === client_1.BookingStatus.CANCELLED) {
+            if (existing && existing.status === BookingStatus.CANCELLED) {
                 const updated = await tx.booking.update({
                     where: { id: existing.id },
-                    data: { status: client_1.BookingStatus.CONFIRMED },
+                    data: { status: BookingStatus.CONFIRMED },
                 });
                 await tx.timeSlot.update({
                     where: { id: timeSlotId },
@@ -181,7 +184,7 @@ let AdminService = class AdminService {
                 data: {
                     userId,
                     timeSlotId,
-                    status: client_1.BookingStatus.CONFIRMED,
+                    status: BookingStatus.CONFIRMED,
                 },
             });
             await tx.timeSlot.update({
