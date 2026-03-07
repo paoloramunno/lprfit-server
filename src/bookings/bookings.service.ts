@@ -40,7 +40,6 @@ export class BookingsService {
     const bookings = await this.prisma.booking.findMany({
       where: {
         userId,
-        status: BookingStatus.CONFIRMED,
         timeSlot: {
           sessionType: {
             code: 'BOUTIQUE_FITNESS',
@@ -61,6 +60,7 @@ export class BookingsService {
     const active: Array<{
       bookingId: string;
       slotId: string;
+      status: BookingStatus;
       date: Date;
       startTime: Date;
       endTime: Date;
@@ -70,6 +70,7 @@ export class BookingsService {
     const past: Array<{
       bookingId: string;
       slotId: string;
+      status: BookingStatus;
       date: Date;
       startTime: Date;
       endTime: Date;
@@ -82,6 +83,7 @@ export class BookingsService {
       const row = {
         bookingId: booking.id,
         slotId: booking.timeSlotId,
+        status: booking.status,
         date: booking.timeSlot.date,
         startTime: booking.timeSlot.startTime,
         endTime: booking.timeSlot.endTime,
@@ -89,7 +91,7 @@ export class BookingsService {
         sessionTypeName: booking.timeSlot.sessionType.name,
       };
 
-      if (slotEnd >= now) {
+      if (booking.status === BookingStatus.CONFIRMED && slotEnd >= now) {
         active.push(row);
       } else {
         past.push(row);
