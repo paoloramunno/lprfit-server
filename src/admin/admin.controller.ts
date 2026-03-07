@@ -62,6 +62,11 @@ export class AdminController {
     return this.adminService.cancelBooking(id);
   }
 
+  @Post('calendar/trial-booking')
+  createTrialBooking(@Body() body: { timeSlotId: string; firstName: string; lastName: string }) {
+    return this.adminService.createTrialBooking(body);
+  }
+
   @Get('checks/pending')
   getPendingChecks() {
     return this.adminService.getPendingChecks();

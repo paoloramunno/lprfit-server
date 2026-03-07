@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomBytes, scryptSync } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 
 type BookingStatus = 'CONFIRMED' | 'CANCELLED';
@@ -355,6 +356,35 @@ export class AdminService {
 
       return updated;
     });
+  }
+
+  async createTrialBooking(input: { timeSlotId: string; firstName: string; lastName: string }) {
+    const firstName = input.firstName?.trim();
+    const lastName = input.lastName?.trim();
+    if (!input.timeSlotId || !firstName || !lastName) {
+      throw new BadRequestException('timeSlotId, firstName and lastName are required');
+    }
+
+    const fullName = `${firstName} ${lastName}`.trim();
+    const unique = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    const email = `prova.${unique}@lprfit.local`;
+    const salt = randomBytes(16).toString('hex');
+    const passwordHash = `${salt}:${scryptSync(randomBytes(12).toString('hex'), salt, 64).toString('hex')}`;
+
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        firstName,
+        lastName,
+        fullName,
+        role: 'USER',
+        passwordHash,
+      },
+      select: { id: true, fullName: true, email: true },
+    });
+
+    const booking = await this.createBookingForUser(user.id, input.timeSlotId);
+    return { user, booking };
   }
 
   async createBookingForUser(userId: string, timeSlotId: string) {
