@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
   Req,
@@ -23,6 +24,11 @@ type RequestUser = {
 @Controller('bookings')
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
+
+  @Get('my')
+  listMyBookings(@Req() req: RequestUser) {
+    return this.bookingsService.listUserBoutiqueBookings(req.user.sub);
+  }
 
   @Post()
   create(@Req() req: RequestUser, @Body() body: { timeSlotId: string }) {
