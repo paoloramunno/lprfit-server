@@ -157,6 +157,206 @@ export class AdminService {
     }));
   }
 
+  async getCalendarDay(date: string) {
+    if (!date) {
+      throw new BadRequestException('date is required (YYYY-MM-DD)');
+    }
+
+    const parsed = new Date(`${date}T00:00:00.000Z`);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new BadRequestException('invalid date format, expected YYYY-MM-DD');
+    }
+
+    const slots = await this.prisma.timeSlot.findMany({
+      where: {
+        date: parsed,
+        sessionType: { code: 'BOUTIQUE_FITNESS' },
+      },
+      include: {
+        bookings: {
+          where: { status: BookingStatus.CONFIRMED },
+          include: {
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+        calendarEvents: {
+          include: {
+            createdBy: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+      orderBy: { startTime: 'asc' },
+    });
+
+    return {
+      date: parsed,
+      slots: slots.map((slot) => ({
+        id: slot.id,
+        date: slot.date,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        capacity: slot.capacity,
+        bookedCount: slot.bookedCount,
+        available: slot.capacity - slot.bookedCount,
+        bookings: slot.bookings.map((b) => ({
+          bookingId: b.id,
+          userId: b.userId,
+          fullName: b.user.fullName,
+          email: b.user.email,
+        })),
+        events: slot.calendarEvents.map((e) => ({
+          id: e.id,
+          text: e.text,
+          createdAt: e.createdAt,
+          createdBy: e.createdBy,
+        })),
+      })),
+    };
+  }
+
+  async createCalendarEvent(input: { adminId: string; timeSlotId: string; text: string }) {
+    const text = input.text?.trim();
+    if (!input.timeSlotId || !text) {
+      throw new BadRequestException('timeSlotId and text are required');
+    }
+
+    const slot = await this.prisma.timeSlot.findUnique({
+      where: { id: input.timeSlotId },
+      include: { sessionType: true },
+    });
+    if (!slot) {
+      throw new NotFoundException('time slot not found');
+    }
+    if (slot.sessionType.code !== 'BOUTIQUE_FITNESS') {
+      throw new BadRequestException('calendar events are available only for boutique fitness');
+    }
+
+    return this.prisma.calendarEvent.create({
+      data: {
+        timeSlotId: input.timeSlotId,
+        text,
+        createdById: input.adminId,
+      },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+      },
+    });
+  }
+
+  async moveBooking(bookingId: string, targetTimeSlotId: string) {
+    if (!bookingId || !targetTimeSlotId) {
+      throw new BadRequestException('bookingId and targetTimeSlotId are required');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.findUnique({
+        where: { id: bookingId },
+        include: { timeSlot: { include: { sessionType: true } } },
+      });
+      if (!booking) {
+        throw new NotFoundException('booking not found');
+      }
+      if (booking.status !== BookingStatus.CONFIRMED) {
+        throw new BadRequestException('only confirmed bookings can be moved');
+      }
+
+      const targetSlot = await tx.timeSlot.findUnique({
+        where: { id: targetTimeSlotId },
+        include: { sessionType: true },
+      });
+      if (!targetSlot) {
+        throw new NotFoundException('target time slot not found');
+      }
+      if (targetSlot.sessionType.code !== 'BOUTIQUE_FITNESS') {
+        throw new BadRequestException('target slot must be boutique fitness');
+      }
+      if (targetSlot.bookedCount >= targetSlot.capacity) {
+        throw new ConflictException('target slot is full');
+      }
+
+      if (booking.timeSlotId === targetTimeSlotId) {
+        return booking;
+      }
+
+      const duplicate = await tx.booking.findUnique({
+        where: {
+          userId_timeSlotId: {
+            userId: booking.userId,
+            timeSlotId: targetTimeSlotId,
+          },
+        },
+      });
+      if (duplicate && duplicate.id !== booking.id && duplicate.status === BookingStatus.CONFIRMED) {
+        throw new ConflictException('user already booked in target slot');
+      }
+
+      await tx.timeSlot.update({
+        where: { id: booking.timeSlotId },
+        data: { bookedCount: { decrement: 1 } },
+      });
+
+      const updated = await tx.booking.update({
+        where: { id: booking.id },
+        data: { timeSlotId: targetTimeSlotId, status: BookingStatus.CONFIRMED },
+      });
+
+      await tx.timeSlot.update({
+        where: { id: targetTimeSlotId },
+        data: { bookedCount: { increment: 1 } },
+      });
+
+      return updated;
+    });
+  }
+
+  async cancelBooking(bookingId: string) {
+    if (!bookingId) {
+      throw new BadRequestException('bookingId is required');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.findUnique({ where: { id: bookingId } });
+      if (!booking) {
+        throw new NotFoundException('booking not found');
+      }
+      if (booking.status === BookingStatus.CANCELLED) {
+        return booking;
+      }
+
+      const updated = await tx.booking.update({
+        where: { id: bookingId },
+        data: { status: BookingStatus.CANCELLED },
+      });
+
+      await tx.timeSlot.update({
+        where: { id: booking.timeSlotId },
+        data: { bookedCount: { decrement: 1 } },
+      });
+
+      return updated;
+    });
+  }
+
   async createBookingForUser(userId: string, timeSlotId: string) {
     if (!userId || !timeSlotId) {
       throw new BadRequestException('userId and timeSlotId are required');

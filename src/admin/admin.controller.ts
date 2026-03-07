@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { AdminGuard } from '../auth/admin.guard';
 import { AdminService } from './admin.service';
 
@@ -36,6 +36,30 @@ export class AdminController {
   @Post('boutique/bookings')
   createBoutiqueBooking(@Body() body: { userId: string; timeSlotId: string }) {
     return this.adminService.createBookingForUser(body.userId, body.timeSlotId);
+  }
+
+  @Get('calendar')
+  getCalendarDay(@Query('date') date: string) {
+    return this.adminService.getCalendarDay(date);
+  }
+
+  @Post('calendar/events')
+  createCalendarEvent(@Req() req: RequestUser, @Body() body: { timeSlotId: string; text: string }) {
+    return this.adminService.createCalendarEvent({
+      adminId: req.user.sub,
+      timeSlotId: body.timeSlotId,
+      text: body.text,
+    });
+  }
+
+  @Patch('calendar/bookings/:id/move')
+  moveBooking(@Param('id') id: string, @Body() body: { targetTimeSlotId: string }) {
+    return this.adminService.moveBooking(id, body.targetTimeSlotId);
+  }
+
+  @Delete('calendar/bookings/:id')
+  cancelBooking(@Param('id') id: string) {
+    return this.adminService.cancelBooking(id);
   }
 
   @Get('checks/pending')

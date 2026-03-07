@@ -56,6 +56,7 @@ model User {
   checksOwned       CoachingCheck[] @relation("CheckOwner")
   checksCreated     CoachingCheck[] @relation("CheckCreator")
   checksProcessed   CoachingCheck[] @relation("CheckProcessor")
+  calendarEvents    CalendarEvent[] @relation("CalendarEventCreator")
 }
 
 model UserProfile {
@@ -87,9 +88,23 @@ model TimeSlot {
 
   sessionType   SessionType @relation(fields: [sessionTypeId], references: [id], onDelete: Restrict)
   bookings      Booking[]
+  calendarEvents CalendarEvent[]
 
   @@unique([sessionTypeId, date, startTime])
   @@index([date, startTime])
+}
+
+model CalendarEvent {
+  id         String   @id @default(uuid())
+  timeSlotId String
+  text       String
+  createdById String
+  createdAt  DateTime @default(now())
+
+  timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
+  createdBy  User     @relation("CalendarEventCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([timeSlotId, createdAt(sort: Desc)])
 }
 
 model Booking {
