@@ -28,6 +28,11 @@ export class AdminController {
     return this.adminService.getBoutiqueSlotsWithBookings(date);
   }
 
+  @Get('boutique/bookings')
+  getUserBoutiqueBookings(@Query('userId') userId: string) {
+    return this.adminService.getUserBoutiqueBookings(userId);
+  }
+
   @Post('boutique/bookings')
   createBoutiqueBooking(@Body() body: { userId: string; timeSlotId: string }) {
     return this.adminService.createBookingForUser(body.userId, body.timeSlotId);
